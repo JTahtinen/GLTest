@@ -18,8 +18,12 @@ Shader::Shader(const std::string& vertSource, const std::string& fragSource)
 	glLinkProgram(_program);
 	glValidateProgram(_program);
 
+	_uniforms[COLOR_U] = glGetUniformLocation(_program, "u_Color");
+	_uniforms[LIGHTPOS_U] = glGetUniformLocation(_program, "u_LightPos");
+
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+
 }
 
 static GLuint createShader(const std::string& text, GLenum shaderType)
@@ -73,9 +77,26 @@ static void checkShaderError(GLuint shader, GLuint flag, bool isProgram, const s
 	}
 }
 
+static float gr = 1.0f;
+static float gg = 0;
+static float gb = 0;
+
+void Shader::setColor(float r, float g, float b)
+{
+	gr = r;
+	gg = g;
+	gb = b;
+}
+
 void Shader::bind()
 {
 	glUseProgram(_program);
+}
+
+void Shader::update()
+{
+	glUniform4f(_uniforms[COLOR_U], gr, gg, gb, 1.0f);
+	glUniform2f(_uniforms[LIGHTPOS_U], 0.0f, 0.0f);
 }
 
 Shader Shader::loadShader(std::string& filename)

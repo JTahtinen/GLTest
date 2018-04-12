@@ -54,6 +54,9 @@ int main(int argc, char** argv)
 	Shader shader = Shader::loadShader((std::string)"./res/shaders/basicShader");
 	shader.bind();
 
+	float b = 0.0f;
+	float incr = 0.01f;
+
 	while (running)
 	{
 		while (SDL_PollEvent(&ev) != 0)
@@ -72,6 +75,20 @@ int main(int argc, char** argv)
 			}
 		}
 
+	if (b >= 1.0f) 
+	{
+		incr = -0.01f;
+	}
+	else if (b <= 0) 
+	{
+		incr = 0.01f;
+	}
+
+	b += incr;
+
+	shader.setColor(0.2f, 0.6f, b);
+		
+	shader.update();
 	display.clear(0.15f, 0.0f, 0.3f, 1.0f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
