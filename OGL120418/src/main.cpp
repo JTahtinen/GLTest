@@ -40,15 +40,16 @@ int main(int argc, char** argv)
 
 		Vertex vertices[]
 		{
-			Vertex(glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0, 0)),
-			Vertex(glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(0, 1)),
-			Vertex(glm::vec3(0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(1, 0))
+			Vertex(glm::vec3(-4.0f, -4.0f, 0.0f), glm::vec4(1.0f, 0.2f, 0.2f, 1.0f), glm::vec2(0, 0)),
+			Vertex(glm::vec3(-4.0f,  4.0f, 0.0f), glm::vec4(0.2f, 1.0f, 0.2f, 1.0f), glm::vec2(0, 1)),
+			Vertex(glm::vec3( 4.0f, -4.0f, 0.0f), glm::vec4(0.2f, 0.2f, 1.0f, 1.0f), glm::vec2(1, 0)),
+			Vertex(glm::vec3( 4.0f,  4.0f, 0.0f), glm::vec4(1.0f, 1.0f, 0.2f, 1.0f), glm::vec2(1, 1))
 		};
 
 		unsigned int indices[] =
 		{
 			0, 1, 2,
-			//2, 1, 3
+			2, 1, 3
 		};
 
 		GLuint vao;
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
 
 
 		//VertexBuffer vbo(vertices, 8 * sizeof(float));
-		VertexBuffer vbo(vertices, 3 * sizeof(Vertex));
+		VertexBuffer vbo(vertices, sizeof(vertices));
 
 		GLCALL(glEnableVertexAttribArray(0));
 		GLCALL(glEnableVertexAttribArray(1));
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
 		GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0));
 		GLCALL(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(3 * sizeof(float))));
 		GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(7* sizeof(float))));
-		IndexBuffer ibo(indices, 3);
+		IndexBuffer ibo(indices, 6);
 		vbo.bind();
 		ibo.bind();
 
@@ -75,15 +76,18 @@ int main(int argc, char** argv)
 
 		Texture texture("./res/textures/bricks.jpg");
 		texture.bind();
-		shader.setUniform1i("u_Texture", 0);
+		glm::mat4 proj = glm::ortho(-8.0f, 8.0f, -6.0f, 6.0f, -1.0f, 1.0f);
 
-		glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
-		shader.setUniformMat4f("u_projectionMatrix", proj);
+		shader.setUniform1i("u_Texture", 0);
+		shader.setUniformMat4f("u_mvp", proj);
+		
 
 		float b = 0.0f;
 		float r = 0.0f;
 		float bIncr = 0.01f;
 		float rIncr = 0.02f;
+		float mouseX = 0.0f;
+		float mouseY = 0.0f;
 		while (running)
 		{
 			while (SDL_PollEvent(&ev) != 0)
@@ -100,7 +104,13 @@ int main(int argc, char** argv)
 						running = false;
 					}
 				}
+				if (ev.type == SDL_MOUSEMOTION)
+				{
+					mouseX = ev.motion.x / 800.0f * 16 - 8.0f; 
+					mouseY = -(ev.motion.y / 600.0f * 12 - 6.0f);
+				}
 			}
+			shader.setUniform2f("u_LightPos", mouseX, mouseY);
 
 			if (b >= 1.0f)
 			{
@@ -128,7 +138,7 @@ int main(int argc, char** argv)
 
 			r += rIncr;
 
-			shader.setUniform4f("u_Color", r, 0.6f, b, 1.0f);
+			shader.setUniform4f("u_Color", r, 0.3, 0.2, 1.0f);
 
 			shader.update();
 			display.clear(0.15f, 0.0f, 0.3f, 1.0f);

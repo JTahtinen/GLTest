@@ -4,6 +4,8 @@
 
 Display::Display(int width, int height, std::string& title)
 {
+
+	SDL_ShowCursor(SDL_DISABLE);
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -18,7 +20,6 @@ Display::Display(int width, int height, std::string& title)
 
 	_win = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
 	_glContext = SDL_GL_CreateContext(_win);
-
 	SDL_GL_SetSwapInterval(1);
 	GLenum status = glewInit();
 
