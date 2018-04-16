@@ -1,21 +1,21 @@
 #pragma once
 #include "GL\glew.h"
 #include <string>
+#include <unordered_map>
+#include <glm\glm.hpp>
+
 class Shader
-{
-	enum
-	{
-		COLOR_U = 0,
-		LIGHTPOS_U,
-		NUM_UNIFORMS
-	};
-	
+{	
 	GLuint	_program;
-	GLint	_uniforms[NUM_UNIFORMS];
+	std::unordered_map<std::string, int> _uniformLocations;
 public:
 	Shader(const std::string& vertSource, const std::string& fragSource);
 	void bind();
 	void update();
-	void setColor(float r, float g, float b);
-	static Shader loadShader(std::string& filename);
+	GLint getUniformLocation(const std::string& u_name);
+	void setUniform1i(const std::string& u_name, int v0);
+	void setUniform4f(const std::string& u_name, float v0, float v1, float v2, float v3);
+	void setUniformMat4f(const std::string& u_name, glm::mat4& matrix);
+
+	static Shader loadShader(const std::string& filename);
 };

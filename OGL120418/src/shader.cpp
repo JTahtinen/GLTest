@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "shader.h"
 #include "util/load_file.h"
 
@@ -12,17 +13,12 @@ Shader::Shader(const std::string& vertSource, const std::string& fragSource)
 	GLuint fragmentShader = createShader(fragSource, GL_FRAGMENT_SHADER);
 
 
-	glAttachShader(_program, vertexShader);
-	glAttachShader(_program, fragmentShader);
-
-	glLinkProgram(_program);
-	glValidateProgram(_program);
-
-	_uniforms[COLOR_U] = glGetUniformLocation(_program, "u_Color");
-	_uniforms[LIGHTPOS_U] = glGetUniformLocation(_program, "u_LightPos");
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	GLCALL(glAttachShader(_program, vertexShader));
+	GLCALL(glAttachShader(_program, fragmentShader));
+	GLCALL(glLinkProgram(_program));
+	GLCALL(glValidateProgram(_program));
+	GLCALL(glDeleteShader(vertexShader));
+	GLCALL(glDeleteShader(fragmentShader));
 
 }
 
@@ -41,8 +37,8 @@ static GLuint createShader(const std::string& text, GLenum shaderType)
 	shaderSourceStrings[0] = text.c_str();
 	shaderSourceStringLengths[0] = text.length();
 
-	glShaderSource(shader, 1, shaderSourceStrings, shaderSourceStringLengths);
-	glCompileShader(shader);
+	GLCALL(glShaderSource(shader, 1, shaderSourceStrings, shaderSourceStringLengths));
+	GLCALL(glCompileShader(shader));
 
 	checkShaderError(shader, GL_COMPILE_STATUS, false, "Error: Shader compilation failure: ");
 
@@ -56,54 +52,74 @@ static void checkShaderError(GLuint shader, GLuint flag, bool isProgram, const s
 
 	if (isProgram)
 	{
-		glGetProgramiv(shader, flag, &success);
+		GLCALL(glGetProgramiv(shader, flag, &success));
 	}
 	else
 	{
-		glGetShaderiv(shader, flag, &success);
+		GLCALL(glGetShaderiv(shader, flag, &success));
 	}
 
 	if (success == GL_FALSE)
 	{
 		if (isProgram)
 		{
-			glGetProgramInfoLog(shader, sizeof(error), NULL, error);
+			GLCALL(glGetProgramInfoLog(shader, sizeof(error), NULL, error));
 		}
 		else
 		{
-			glGetShaderInfoLog(shader, sizeof(error), NULL, error);
+			GLCALL(glGetShaderInfoLog(shader, sizeof(error), NULL, error));
 		}
 		std::cerr << errorMessage << ": '" << error << "'" << std::endl;
 	}
 }
 
-static float gr = 1.0f;
-static float gg = 0;
-static float gb = 0;
-
-void Shader::setColor(float r, float g, float b)
-{
-	gr = r;
-	gg = g;
-	gb = b;
-}
 
 void Shader::bind()
 {
-	glUseProgram(_program);
+	GLCALL(glUseProgram(_program));
 }
 
 void Shader::update()
 {
-	glUniform4f(_uniforms[COLOR_U], gr, gg, gb, 1.0f);
-	glUniform2f(_uniforms[LIGHTPOS_U], 0.0f, 0.0f);
+
 }
 
-Shader Shader::loadShader(std::string& filename)
+void Shader::setUniform1i(const std::string& u_name, int v0)
+{
+	GLCALL(glUniform1i(getUniformLocation(u_name), v0));
+}
+
+void Shader::setUniform4f(const std::string& u_name, float v0, float v1, float v2, float v3)
+{
+	GLCALL(glUniform4f(getUniformLocation(u_name), v0, v1, v2, v3));
+}
+
+void Shader::setUniformMat4f(const std::string& u_name, glm::mat4& matrix)
+{
+	GLCALL(glUniformMatrix4fv(getUniformLocation(u_name), 1, GL_FALSE, &matrix[0][0]));
+}
+
+GLint Shader::getUniformLocation(const std::string&  u_name)
+{
+	if (_uniformLocations.find(u_name) != _uniformLocations.end())
+	{
+		return _uniformLocations[u_name];
+	}
+
+	GLCALL(GLint location = glGetUniformLocation(_program, u_name.c_str()));
+	if (location == -1)
+	{
+		std::cout << "[WARNING] Could not find uniform: " << u_name << std::endl;
+	}
+	_uniformLocations[u_name] = location;
+	return location; 
+}
+
+Shader Shader::loadShader(const std::string& filename)
 {
 	std::string vertSource = load_text_file(filename + ".vs");
 	std::string fragSource = load_text_file(filename + ".fs");
-	std::cout << vertSource << std::endl;
-	std::cout << fragSource << std::endl;
+//	std::cout << vertSource << std::endl;
+//	std::cout << fragSource << std::endl;
 	return Shader(vertSource, fragSource);
 }
