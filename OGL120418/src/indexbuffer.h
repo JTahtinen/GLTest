@@ -7,6 +7,8 @@ class IndexBuffer
 	GLuint	_count;
 public:
 	IndexBuffer(const unsigned int* data, unsigned int count);
+	IndexBuffer();
+	void set(const unsigned int* indices, unsigned int count);
 	~IndexBuffer();
 	void bind() const;
 

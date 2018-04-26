@@ -1,9 +1,16 @@
 #include "vertex.h"
 
-Vertex::Vertex(const glm::vec3& pos, const glm::vec4& color, const glm::vec2& texCoord)
+
+Vertex::Vertex(const glm::vec4& pos, const glm::vec4& color)
 	: _pos(pos)
 	, _color(color)
-	, _texCoord(texCoord)
+{
+
+}
+
+Vertex::Vertex()
+	: _pos(0.0f, 0.0f, 0.0f, 0.0f)
+	, _color(0.0f, 0.0f, 0.0f, 0.0f)
 {
 
 }

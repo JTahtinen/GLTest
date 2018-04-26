@@ -19,3 +19,7 @@ void VertexBuffer::bind() const
 	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, _buffer));
 }
 
+VertexBuffer* VertexBuffer::genVertexBuffer(const void* data, unsigned int size)
+{
+	return new VertexBuffer(data, size);
+}
